@@ -8,7 +8,9 @@ import {
 } from '@nestjs/common';
 import { FusionService } from './fusion.service';
 import { HistoryQueryDto } from './dto/history-query.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Fusion')
 @Controller('fusion')
 export class FusionController {
   constructor(private readonly fusionService: FusionService) {}
