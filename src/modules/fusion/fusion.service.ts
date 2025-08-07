@@ -62,9 +62,8 @@ export class FusionService {
         nombre_personaje: person.name,
         planeta_origen: planet.name,
         clima_planeta: planet.climate,
-        temperatura_actual: `${weather.temperature} ${weather.temperature_unit}`,
+        // temperatura_actual: `${weather.temperature} ${weather.temperature_unit}`,
         poblacion_planeta: population,
-        id_personaje_swapi: characterId,
       };
 
       // 6. Almacenar en DynamoDB
@@ -74,7 +73,6 @@ export class FusionService {
       if (error instanceof HttpException) {
         throw error;
       }
-      // Lanza un error genérico si una de las APIs externas falla
       throw new HttpException(
         'Error al contactar servicios externos',
         HttpStatus.SERVICE_UNAVAILABLE,
