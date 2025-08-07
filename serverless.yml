@@ -1,0 +1,87 @@
+service: tech-test-api
+
+# 1. Cambiamos el plugin de empaquetado a serverless-webpack
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-prune-plugin
+
+# Deshabilita el empaquetador ESBuild incorporado para evitar conflictos con serverless-webpack
+build:
+  esbuild: false
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  architecture: arm64 # Usamos ARM64 para mejor rendimiento y menor costo
+  region: us-east-1 # Región de nuestro proyecto
+  stage: ${opt:stage, 'dev'} # Permite desplegar en diferentes entornos (ej: dev, prod)
+
+  # Configuraciones globales para la función Lambda
+  memorySize: 256
+  timeout: 29 # Timeout de 29s, seguro para llamadas a APIs externas
+  logRetentionInDays: 14 # Guardar logs por 14 días
+  
+  environment:
+    # Variable para nuestra tabla de DynamoDB
+    DYNAMO_TABLE: ${self:custom.tableName}
+    # Mejora de rendimiento para conexiones en Node.js
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    # Habilita source maps para ver el código TS en los errores de CloudWatch
+    NODE_OPTIONS: --enable-source-maps
+
+  iam:
+    role:
+      statements:
+        # Permisos para que la Lambda pueda leer y escribir en nuestra tabla
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+           - !GetAtt FusedDataTable.Arn # Permiso específico para la tabla
+           - !Sub "${FusedDataTable.Arn}/index/*" # Permiso para los índices de la tabla
+
+functions:
+  api:
+    handler: dist/lambda.handler
+    events:
+      - httpApi:
+          path: /{proxy+} # Captura todas las rutas (ej: /fusionados/1, /historial)
+          method: any
+
+# Sección para configuraciones personalizadas
+custom:
+  tableName: fused-data-table-${self:provider.stage}
+  serverless-offline:
+    httpPort: 3000
+  prune:
+    automatic: true
+    number: 3 # Mantiene solo las últimas 3 versiones de la función
+  # 2. Añadimos la configuración para que Serverless sepa cómo usar Webpack
+  webpack:
+    webpackConfig: ./webpack.config.js # Apunta a nuestro archivo de configuración
+    includeModules: true # Le dice a Webpack que empaquete las dependencias
+    packager: 'yarn'
+
+# Definición de nuestra infraestructura (la tabla de DynamoDB)
+resources:
+  Resources:
+    FusedDataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        # Habilita la recuperación punto a punto como medida de seguridad
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
