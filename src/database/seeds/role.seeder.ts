@@ -11,7 +11,7 @@ export default class RoleSeeder implements Seeder {
 
     const users = userRepository.create([
       {
-        id: 1,
+        id: '1',
         email: 'admin@example.com',
         password: 'admin123',
       },

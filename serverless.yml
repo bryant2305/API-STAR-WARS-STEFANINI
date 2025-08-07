@@ -1,0 +1,27 @@
+service: api-serverless-data-fusion
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: dev
+  environment:
+    NODE_ENV: production
+
+functions:
+  app:
+    handler: dist/lambda.handler
+    events:
+      - http:
+          path: /{proxy+}
+          method: any
+          cors: true
+
+plugins:
+  - serverless-offline
+  - serverless-plugin-typescript
+
+package:
+  exclude:
+    - node_modules/**
+    - test/**

@@ -1,51 +1,13 @@
-import { Injectable, HttpException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { DynamoService } from 'src/dynamo/dynamo.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private readonly eventEmitter: EventEmitter2,
-  ) {}
+  private readonly tableName = 'Users';
 
-  async create(createUserDto: CreateUserDto): Promise<Partial<User>> {
-    const found = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
-
-    if (found) {
-      throw new HttpException('Ya existe un usuario con este correo', 500);
-    }
-
-    if (createUserDto.password !== createUserDto.passwordConfirmation) {
-      throw new HttpException(
-        'password and password confirmation must be the same',
-        400,
-      );
-    }
-    try {
-      const createUser: any = {
-        ...createUserDto,
-        profile: {
-          firstName: createUserDto.firstName,
-          lastName: createUserDto.lastName,
-          phone: createUserDto.phone,
-          profileImage: createUserDto.profileImage,
-        },
-      };
-      const savedUser = await this.userRepository.save(createUser);
-
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, passwordConfirmation, ...userResponse } = createUserDto;
-
-      return userResponse;
-    } catch (error) {
-      throw new HttpException('Error al crear el usuario', 500);
-    }
-  }
+  constructor(private readonly dynamoService: DynamoService) {}
 
   async comparePasswords(
     plainTextPassword: string,
@@ -60,15 +22,17 @@ export class UsersService {
     return bcrypt.hash(password, salt);
   }
 
-  findOneByEmail(email: string) {
-    return this.userRepository.findOneBy({ email });
+  async findOneByEmail(email: string): Promise<User | undefined> {
+    const users = await this.findAll();
+    return users.find((user) => user.email === email);
   }
 
-  findAll() {
-    return this.userRepository.find();
+  async findAll(): Promise<User[]> {
+    const rawUsers = await this.dynamoService.scanTable(this.tableName);
+    return rawUsers.map((item) => item as User);
   }
-  // En tu servicio de usuarios
-  async getUserById(userId: number): Promise<User> {
-    return await this.userRepository.findOne({ where: { id: userId } });
+
+  async getUserById(id: string): Promise<User | null> {
+    return (await this.dynamoService.getItem(this.tableName, { id })) as User;
   }
 }

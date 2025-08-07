@@ -5,16 +5,13 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  OneToOne,
-  JoinColumn,
-  ManyToOne,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('increment')
-  id: number;
+  id: string;
 
   @Column({ length: 100, unique: true })
   email: string;
