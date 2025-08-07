@@ -1,27 +1,53 @@
-service: api-serverless-data-fusion
+service: tech-test-api
+
+frameworkVersion: '3'
 
 provider:
   name: aws
-  runtime: nodejs18.x
-  region: us-east-1
+  runtime: nodejs20.x
   stage: dev
+  region: us-east-1 # Puedes cambiar la región si lo necesitas
   environment:
-    NODE_ENV: production
+    DYNAMO_TABLE: ${self:custom.tableName} # Inyecta el nombre de la tabla como variable de entorno
+  iam: # Permisos que necesita la función Lambda
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.tableName}"
 
 functions:
-  app:
-    handler: dist/lambda.handler
+  api:
+    handler: dist/lambda.handler # Apunta al handler que empaqueta la app NestJS
     events:
-      - http:
-          path: /{proxy+}
-          method: any
-          cors: true
+      - httpApi: '*' # Captura todas las rutas y las dirige a la app
 
-plugins:
-  - serverless-offline
-  - serverless-plugin-typescript
+custom:
+  tableName: fused-data-table-${self:provider.stage}
+  # Plugins de Serverless para trabajar con TypeScript y offline
+  serverless-offline:
+    httpPort: 3000
+  plugins:
+    - serverless-plugin-typescript
+    - serverless-offline
 
-package:
-  exclude:
-    - node_modules/**
-    - test/**
+# Define los recursos de infraestructura, como la base de datos
+resources:
+  Resources:
+    FusedDataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST

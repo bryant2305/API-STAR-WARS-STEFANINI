@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { DynamoService } from 'src/dynamo/dynamo.service';
+import { DynamoService } from 'src/modules/dynamo/dynamo.service';
 
 @Injectable()
 export class UsersService {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, ScanCommandInput } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -55,5 +55,24 @@ export class DynamoService {
       }),
     );
     return result.Items;
+  }
+
+  async scanTablePaginated<T>(
+    tableName: string,
+    limit: number,
+    lastEvaluatedKey?: Record<string, any>,
+  ): Promise<{ items: T[]; lastKey?: Record<string, any> }> {
+    const params: ScanCommandInput = {
+      TableName: tableName,
+      Limit: limit,
+      ExclusiveStartKey: lastEvaluatedKey,
+    };
+
+    const result = await this.docClient.send(new ScanCommand(params));
+
+    return {
+      items: result.Items as T[],
+      lastKey: result.LastEvaluatedKey,
+    };
   }
 }
