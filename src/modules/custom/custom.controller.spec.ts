@@ -50,8 +50,7 @@ describe('CustomController', () => {
       expect(result).toEqual({
         id: expect.any(String),
         fecha_creacion: expect.any(String),
-        tipo: 'Test',
-        datos: [{ clave: 'valor1' }, { clave: 'valor2' }],
+        ...dto,
       });
     });
   });
