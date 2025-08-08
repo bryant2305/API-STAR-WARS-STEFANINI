@@ -5,7 +5,7 @@ plugins:
   - serverless-webpack
   - serverless-offline
   - serverless-prune-plugin
-
+  - serverless-dynamodb-local
 # Deshabilita el empaquetador ESBuild incorporado para evitar conflictos con serverless-webpack
 build:
   esbuild: false
@@ -13,20 +13,18 @@ build:
 provider:
   name: aws
   runtime: nodejs20.x
-  architecture: arm64 # Usamos ARM64 para mejor rendimiento y menor costo
-  region: us-east-1 # Región de nuestro proyecto
-  stage: ${opt:stage, 'dev'} # Permite desplegar en diferentes entornos (ej: dev, prod)
-
-  # Configuraciones globales para la función Lambda
+  architecture: arm64
+  region: us-east-1 # region por defecto configurable
+  stage: ${opt:stage, 'dev'}
   memorySize: 256
-  timeout: 29 # Timeout de 29s, seguro para llamadas a APIs externas
-  logRetentionInDays: 14 # Guardar logs por 14 días
-  
+  timeout: 29
+  logRetentionInDays: 14
   environment:
     DYNAMO_TABLE: ${self:custom.tableName}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     NODE_OPTIONS: --enable-source-maps
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+    IS_OFFLINE: ${env:IS_OFFLINE} # Variable para saber si estamos en modo offline
 
   iam:
     role:
@@ -61,10 +59,19 @@ functions:
       - httpApi:
           path: /{proxy+} # Captura todas las rutas (ej: /fusionados/1, /historial)
           method: any
-          cors: true
+          cors:
+            allowedOrigins:
+              - '*'
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
 
 # Sección para configuraciones personalizadas
 custom:
+  defaultRegion: us-east-1
   tableName: fused-data-table-${self:provider.stage}
   serverless-offline:
     httpPort: 3000
@@ -76,6 +83,15 @@ custom:
     webpackConfig: ./webpack.config.js # Apunta a nuestro archivo de configuración
     includeModules: true # Le dice a Webpack que empaquete las dependencias
     packager: 'yarn'
+
+
+  dynamodb:
+    start:
+      port: 8000
+      inMemory: true # La base de datos se borra cada vez que la detienes (ideal para pruebas)
+      migrate: true # Crea automáticamente las tablas de tu sección 'resources'
+    stages:
+      - dev 
 
 # Definición de nuestra infraestructura (la tabla de DynamoDB)
 resources:

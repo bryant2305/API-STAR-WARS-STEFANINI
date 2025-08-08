@@ -13,6 +13,8 @@ nestjs-api.zip
 .sls-next/
 .slsignore
 .my-nest-app.zip
+.dynamodb
+dynamodb_local_latest.tar.gz
 
 # Directorios de compilación
 dist/
