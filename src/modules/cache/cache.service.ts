@@ -32,14 +32,12 @@ export class CacheService {
     try {
       const { Item } = await this.docClient.send(command);
       // DynamoDB TTL elimina los items expirados automáticamente,
-      // pero en caso de que haya un pequeño retraso, una comprobación manual es segura.
       if (Item && Item.ttl > Math.floor(Date.now() / 1000)) {
         return Item.value as T;
       }
       return null;
     } catch (error) {
       console.error('Error al obtener del caché de DynamoDB:', error);
-      // En caso de error, actuamos como si fuera un cache miss.
       return null;
     }
   }
@@ -65,7 +63,6 @@ export class CacheService {
       await this.docClient.send(command);
     } catch (error) {
       console.error('Error al guardar en el caché de DynamoDB:', error);
-      // No lanzamos error para no interrumpir el flujo principal.
     }
   }
 }
