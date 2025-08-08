@@ -13,7 +13,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Fusion')
 @Controller('fusion')
 export class FusionController {
-  constructor(private readonly fusionService: FusionService) {}
+  constructor(private readonly fusionService: FusionService,) {}
 
   @Get('fusionados/:id')
   getFusedData(@Param('id', ParseIntPipe) characterId: number) {

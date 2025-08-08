@@ -7,6 +7,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DynamoModule } from './modules/dynamo/dynamo.module';
 import { FusionModule } from './modules/fusion/fusion.module';
 import { CustomModule } from './modules/custom/custom.module';
+import { CacheModule } from './modules/cache/cache.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CustomModule } from './modules/custom/custom.module';
     DynamoModule,
     FusionModule,
     CustomModule,
+    CacheModule,
     // EmailModule,
   ],
   controllers: [AppController],
