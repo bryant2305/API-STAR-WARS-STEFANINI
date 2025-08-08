@@ -23,16 +23,24 @@ provider:
   logRetentionInDays: 14 # Guardar logs por 14 días
   
   environment:
-    # Variable para nuestra tabla de DynamoDB
     DYNAMO_TABLE: ${self:custom.tableName}
-    # Mejora de rendimiento para conexiones en Node.js
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
-    # Habilita source maps para ver el código TS en los errores de CloudWatch
     NODE_OPTIONS: --enable-source-maps
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
 
   iam:
     role:
       statements:
+        # --- INICIO DE LA SECCIÓN AÑADIDA ---
+        # Permisos para que la Lambda pueda escribir logs en CloudWatch
+        - Effect: "Allow"
+          Action:
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+          Resource: "arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/${self:service}-${self:provider.stage}-*:*"
+        # --- FIN DE LA SECCIÓN AÑADIDA ---
+
         # Permisos para que la Lambda pueda leer y escribir en nuestra tabla
         - Effect: Allow
           Action:
@@ -53,6 +61,7 @@ functions:
       - httpApi:
           path: /{proxy+} # Captura todas las rutas (ej: /fusionados/1, /historial)
           method: any
+          cors: true
 
 # Sección para configuraciones personalizadas
 custom:
