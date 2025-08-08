@@ -1,12 +1,10 @@
 service: tech-test-api
 
-# 1. Cambiamos el plugin de empaquetado a serverless-webpack
 plugins:
   - serverless-webpack
   - serverless-offline
   - serverless-prune-plugin
-  - serverless-dynamodb-local
-# Deshabilita el empaquetador ESBuild incorporado para evitar conflictos con serverless-webpack
+
 build:
   esbuild: false
 
@@ -14,32 +12,29 @@ provider:
   name: aws
   runtime: nodejs20.x
   architecture: arm64
-  region: us-east-1 # region por defecto configurable
+  region: us-east-1
   stage: ${opt:stage, 'dev'}
   memorySize: 256
   timeout: 29
   logRetentionInDays: 14
   environment:
     DYNAMO_TABLE: ${self:custom.tableName}
+    CACHE_TABLE: ${self:custom.cacheTableName} # Nueva variable de entorno para la tabla de caché
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     NODE_OPTIONS: --enable-source-maps
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
-    IS_OFFLINE: ${env:IS_OFFLINE} # Variable para saber si estamos en modo offline
+    IS_OFFLINE: ${env:IS_OFFLINE}
 
   iam:
     role:
       statements:
-        # --- INICIO DE LA SECCIÓN AÑADIDA ---
-        # Permisos para que la Lambda pueda escribir logs en CloudWatch
         - Effect: "Allow"
           Action:
             - "logs:CreateLogGroup"
             - "logs:CreateLogStream"
             - "logs:PutLogEvents"
           Resource: "arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/${self:service}-${self:provider.stage}-*:*"
-        # --- FIN DE LA SECCIÓN AÑADIDA ---
 
-        # Permisos para que la Lambda pueda leer y escribir en nuestra tabla
         - Effect: Allow
           Action:
             - dynamodb:Query
@@ -49,15 +44,16 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
           Resource:
-           - !GetAtt FusedDataTable.Arn # Permiso específico para la tabla
-           - !Sub "${FusedDataTable.Arn}/index/*" # Permiso para los índices de la tabla
+            - !GetAtt FusedDataTable.Arn
+            - !Sub "${FusedDataTable.Arn}/index/*"
+            - !GetAtt CacheTable.Arn # Permisos para la nueva tabla de caché
 
 functions:
   api:
     handler: dist/lambda.handler
     events:
       - httpApi:
-          path: /{proxy+} # Captura todas las rutas (ej: /fusionados/1, /historial)
+          path: /{proxy+}
           method: any
           cors:
             allowedOrigins:
@@ -69,31 +65,27 @@ functions:
               - DELETE
               - OPTIONS
 
-# Sección para configuraciones personalizadas
 custom:
   defaultRegion: us-east-1
   tableName: fused-data-table-${self:provider.stage}
+  cacheTableName: cache-table-${self:provider.stage} # Nombre para la tabla de caché
   serverless-offline:
     httpPort: 3000
   prune:
     automatic: true
-    number: 3 # Mantiene solo las últimas 3 versiones de la función
-  # 2. Añadimos la configuración para que Serverless sepa cómo usar Webpack
+    number: 3
   webpack:
-    webpackConfig: ./webpack.config.js # Apunta a nuestro archivo de configuración
-    includeModules: true # Le dice a Webpack que empaquete las dependencias
+    webpackConfig: ./webpack.config.js
+    includeModules: true
     packager: 'yarn'
-
-
   dynamodb:
     start:
       port: 8000
-      inMemory: true # La base de datos se borra cada vez que la detienes (ideal para pruebas)
-      migrate: true # Crea automáticamente las tablas de tu sección 'resources'
+      inMemory: true
+      migrate: true
     stages:
-      - dev 
+      - dev
 
-# Definición de nuestra infraestructura (la tabla de DynamoDB)
 resources:
   Resources:
     FusedDataTable:
@@ -107,6 +99,20 @@ resources:
           - AttributeName: id
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
-        # Habilita la recuperación punto a punto como medida de seguridad
         PointInTimeRecoverySpecification:
           PointInTimeRecoveryEnabled: true
+
+    CacheTable: # Definición de la nueva tabla de caché
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.cacheTableName}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification: # Habilitamos TTL en esta tabla
+          AttributeName: ttl
+          Enabled: true
