@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import { DynamoService } from 'src/modules/dynamo/dynamo.service';
 
 @Injectable()
 export class UsersService {
-  private readonly tableName = 'Users';
+  private readonly tableName = process.env.DYNAMO_TABLE;
 
   constructor(private readonly dynamoService: DynamoService) {}
 

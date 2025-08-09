@@ -5,15 +5,17 @@ import {
   Query,
   ParseIntPipe,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { FusionService } from './fusion.service';
 import { HistoryQueryDto } from './dto/history-query.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { JwtGuard } from '../../auth/jwt-auth-guard';
 
 @ApiTags('Fusion')
 @Controller('fusion')
 export class FusionController {
-  constructor(private readonly fusionService: FusionService,) {}
+  constructor(private readonly fusionService: FusionService) {}
 
   @Get('fusionados/:id')
   getFusedData(@Param('id', ParseIntPipe) characterId: number) {
@@ -21,6 +23,7 @@ export class FusionController {
   }
 
   @Get('historial')
+  @UseGuards(JwtGuard)
   getHistory(
     @Query(new ValidationPipe({ transform: true })) query: HistoryQueryDto,
   ) {
