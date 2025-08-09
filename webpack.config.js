@@ -1,27 +1,24 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const nodeExternals = require('webpack-node-externals');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin'); // también faltaba este require
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const slsw = require('serverless-webpack');
 
 module.exports = {
-  entry: './src/lambda.ts',
+  entry: slsw.lib.entries,
   target: 'node',
-  mode: 'production',
-  externals: [nodeExternals()], // ← 2. AÑADIR ESTA LÍNEA
+  mode: slsw.lib.webpack.isLocal ? 'development' : 'production',
+  devtool: 'source-map',
+  externals: [nodeExternals()],
   resolve: {
-    extensions: ['.ts', '.js'],
-    plugins: [
-      new TsconfigPathsPlugin({
-        configFile: './tsconfig.json',
-      }),
-    ],
+    extensions: ['.ts', '.js', '.json'],
+    plugins: [new TsconfigPathsPlugin({ configFile: './tsconfig.json' })],
   },
   module: {
     rules: [
       {
         test: /\.ts$/,
         loader: 'ts-loader',
-        // La clave está aquí: excluimos explícitamente los archivos de prueba
         exclude: [
           path.resolve(__dirname, 'node_modules'),
           path.resolve(__dirname, '.serverless'),
@@ -29,15 +26,14 @@ module.exports = {
           /\.(spec|e2e-spec)\.ts$/,
         ],
         options: {
-          // Acelera la compilación
           transpileOnly: true,
         },
       },
     ],
   },
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: 'lambda.js',
     libraryTarget: 'commonjs2',
+    path: path.join(__dirname, '.webpack'),
+    filename: '[name].js',
   },
 };

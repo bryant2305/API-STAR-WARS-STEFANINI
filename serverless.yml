@@ -62,7 +62,7 @@ provider:
 
 functions:
   api:
-    handler: dist/src/lambda.handler
+    handler: src/lambda.handler
     events:
       - httpApi:
           path: /{proxy+}
@@ -83,6 +83,7 @@ custom:
   cacheTableName: cache-table-${self:provider.stage} # Nombre para la tabla de caché
   serverless-offline:
     httpPort: 3000
+    useChildProcesses: true
   prune:
     automatic: true
     number: 3
@@ -90,6 +91,7 @@ custom:
     webpackConfig: ./webpack.config.js
     includeModules: true
     packager: 'yarn'
+
   dynamodb:
     start:
       port: 8000
