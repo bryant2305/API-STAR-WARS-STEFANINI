@@ -17,6 +17,9 @@ provider:
   memorySize: 256
   timeout: 29
   logRetentionInDays: 14
+  tracing:
+    apiGateway: true
+    lambda: true
   environment:
     DYNAMO_TABLE: ${self:custom.tableName}
     CACHE_TABLE: ${self:custom.cacheTableName} # Nueva variable de entorno para la tabla de caché
@@ -51,9 +54,15 @@ provider:
             - !GetAtt UsersTable.Arn
             - !Sub "${UsersTable.Arn}/index/*" # Permisos para la nueva tabla de caché
 
+        - Effect: Allow
+          Action:
+            - "xray:PutTraceSegments"
+            - "xray:PutTelemetryRecords"
+          Resource: "*"
+
 functions:
   api:
-    handler: dist/lambda.handler
+    handler: src/lambda.handler
     events:
       - httpApi:
           path: /{proxy+}
@@ -74,6 +83,7 @@ custom:
   cacheTableName: cache-table-${self:provider.stage} # Nombre para la tabla de caché
   serverless-offline:
     httpPort: 3000
+    useChildProcesses: true
   prune:
     automatic: true
     number: 3
@@ -81,6 +91,7 @@ custom:
     webpackConfig: ./webpack.config.js
     includeModules: true
     packager: 'yarn'
+
   dynamodb:
     start:
       port: 8000

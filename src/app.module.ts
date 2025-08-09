@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -9,6 +9,7 @@ import { FusionModule } from './modules/fusion/fusion.module';
 import { CustomModule } from './modules/custom/custom.module';
 import { CacheModule } from './modules/cache/cache.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { XRayMiddleware } from './common/middleware/xray.middleware';
 
 @Module({
   imports: [
@@ -30,4 +31,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(XRayMiddleware).forRoutes('*');
+  }
+}
