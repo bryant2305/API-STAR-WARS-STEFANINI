@@ -18,6 +18,7 @@ export class FusionController {
   constructor(private readonly fusionService: FusionService) {}
 
   @Get('fusionados/:id')
+  @UseGuards(JwtGuard)
   getFusedData(@Param('id', ParseIntPipe) characterId: number) {
     return this.fusionService.getFusedData(characterId);
   }

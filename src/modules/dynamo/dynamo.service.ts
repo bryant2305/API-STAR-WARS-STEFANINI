@@ -6,6 +6,7 @@ import {
   GetCommand,
   DeleteCommand,
   ScanCommand,
+  QueryCommand,
 } from '@aws-sdk/lib-dynamodb';
 
 @Injectable()
@@ -74,5 +75,23 @@ export class DynamoService {
       items: result.Items as T[],
       lastKey: result.LastEvaluatedKey,
     };
+  }
+  async queryTable(
+    tableName: string,
+    keyConditionExpression: string,
+    expressionValues: Record<string, any>,
+    indexName?: string,
+  ) {
+    const params: any = {
+      TableName: tableName,
+      KeyConditionExpression: keyConditionExpression,
+      ExpressionAttributeValues: expressionValues,
+    };
+
+    if (indexName) {
+      params.IndexName = indexName;
+    }
+    const result = await this.docClient.send(new QueryCommand(params));
+    return result.Items || [];
   }
 }

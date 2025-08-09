@@ -5,7 +5,7 @@ import { DynamoService } from 'src/modules/dynamo/dynamo.service';
 
 @Injectable()
 export class UsersService {
-  private readonly tableName = process.env.DYNAMO_TABLE;
+  private readonly tableName = process.env.USERS_TABLE;
 
   constructor(private readonly dynamoService: DynamoService) {}
 
@@ -23,8 +23,14 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string): Promise<User | undefined> {
-    const users = await this.findAll();
-    return users.find((user) => user.email === email);
+    const result = await this.dynamoService.queryTable(
+      this.tableName,
+      'email = :email',
+      { ':email': email },
+      'email-index',
+    );
+
+    return result.length ? (result[0] as User) : undefined;
   }
 
   async findAll(): Promise<User[]> {
