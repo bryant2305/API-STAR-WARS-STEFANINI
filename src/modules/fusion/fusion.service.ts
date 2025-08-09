@@ -8,7 +8,7 @@ import { DynamoService } from '../dynamo/dynamo.service';
 import { SwapiService } from '../shared/swapi.service';
 import { WeatherService } from '../shared/weather.service';
 import { v4 as uuidv4 } from 'uuid';
-import { planetCoordinates } from 'src/enums/coordanates.enum';
+import { planetCoordinates } from '../../enums/coordanates.enum';
 import { CacheService } from '../cache/cache.service'; // Importamos el nuevo servicio
 
 @Injectable()
@@ -20,7 +20,7 @@ export class FusionService {
     private readonly swapiService: SwapiService,
     private readonly weatherService: WeatherService,
     private readonly dynamo: DynamoService,
-    private readonly cacheService: CacheService, // Inyectamos el CacheService
+    private readonly cacheService: CacheService,
   ) {}
 
   async getFusedData(characterId: number) {
@@ -31,7 +31,7 @@ export class FusionService {
       console.log(`Cache HIT para personaje ${characterId} desde DynamoDB.`);
       return cachedData;
     }
-    console.log(`Cache MISS para personaje ${characterId}.`);
+    console.log(`Cache Miss para personaje ${characterId}.`);
 
     // 2) Si no hay caché, obtener datos externos
     try {

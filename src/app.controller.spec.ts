@@ -14,9 +14,10 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('pong"', () => {
-      expect(appController.healthCheck()).toBe('pong!');
+  describe('healthCheck (GET /ping)', () => {
+    it('debería devolver "pong"', () => {
+      const result = appController.healthCheck();
+      expect(result).toBe('pong');
     });
   });
 });
