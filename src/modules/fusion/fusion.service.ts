@@ -70,7 +70,6 @@ export class FusionService {
         `Cache SET para ${cacheKey} en DynamoDB (TTL ${this.CACHE_TTL_SECONDS}s)`,
       );
 
-      // 4) Guardar el resultado en la tabla principal de datos (tu lógica existente)
       await this.dynamo.putItem(this.tableName, fusion);
 
       return fusion;

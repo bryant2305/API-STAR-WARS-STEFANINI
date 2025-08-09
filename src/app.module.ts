@@ -8,18 +8,24 @@ import { DynamoModule } from './modules/dynamo/dynamo.module';
 import { FusionModule } from './modules/fusion/fusion.module';
 import { CustomModule } from './modules/custom/custom.module';
 import { CacheModule } from './modules/cache/cache.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, cache: true }),
-    // AuthModule,
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 5,
+      },
+    ]),
     AuthModule,
     DynamoModule,
     FusionModule,
     CustomModule,
     CacheModule,
-    // EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
