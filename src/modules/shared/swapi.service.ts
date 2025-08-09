@@ -22,7 +22,7 @@ export class SwapiService {
   ) {
     this.swapiBaseUrl =
       this.configService.get<string>('SWAPI_BASE_URL') ||
-      'https://swapi.dev/api';
+      'https://swapi.info/api/people/';
   }
 
   private async fetchFromSwapi<T>(endpointOrUrl: string): Promise<T> {

@@ -22,12 +22,13 @@ provider:
     lambda: true
   environment:
     DYNAMO_TABLE: ${self:custom.tableName}
-    CACHE_TABLE: ${self:custom.cacheTableName} # Nueva variable de entorno para la tabla de caché
+    CACHE_TABLE: ${self:custom.cacheTableName}
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
     NODE_OPTIONS: --enable-source-maps
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     IS_OFFLINE: ${env:IS_OFFLINE}
     USERS_TABLE: users-${self:provider.stage}
+    SWAPI_BASE_URL: ${env:SWAPI_BASE_URL}
 
   iam:
     role:

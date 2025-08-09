@@ -9,7 +9,7 @@ export class XRayMiddleware implements NestMiddleware {
     if (segment) {
       segment.addAnnotation('path', req.path);
       segment.addAnnotation('method', req.method);
-      // Puedes añadir usuario si está autenticado
+
       if ((req as any).user?.id) {
         segment.addAnnotation('userId', (req as any).user.id);
       }

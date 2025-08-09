@@ -5,8 +5,10 @@ import { DynamoService } from '../dynamo/dynamo.service';
 import { WeatherService } from '../shared/weather.service';
 import { SwapiService } from '../shared/swapi.service';
 import { CacheService } from '../cache/cache.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
+  imports: [HttpModule],
   controllers: [FusionController],
   providers: [
     FusionService,
