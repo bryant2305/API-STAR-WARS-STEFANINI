@@ -1,6 +1,5 @@
 import './xray';
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
@@ -8,7 +7,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 export async function createNestServer() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const configService = app.get(ConfigService);
 
   const config = new DocumentBuilder()
     .addBearerAuth()
@@ -34,9 +32,10 @@ export async function createNestServer() {
 }
 
 if (process.env.NODE_ENV !== 'production') {
+  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
   createNestServer().then((app) =>
-    app.listen(3000, () => {
-      Logger.log(`🚀 Local server running on http://localhost:3000`);
+    app.listen(port, () => {
+      Logger.log(`🚀 Local server running on http://localhost:${port}`);
     }),
   );
 }

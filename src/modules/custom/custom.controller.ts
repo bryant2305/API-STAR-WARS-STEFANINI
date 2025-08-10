@@ -7,8 +7,8 @@ import {
 } from '@nestjs/common';
 import { CustomService } from './custom.service';
 import { CreateCustomDto } from './dto/create-custom.dto';
-import { ApiTags } from '@nestjs/swagger';
-import { JwtGuard } from 'src/auth/jwt-auth-guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtGuard } from '../../auth/jwt-auth-guard';
 
 @ApiTags('Custom')
 @Controller('almacenar')
@@ -17,6 +17,7 @@ export class CustomController {
 
   @Post()
   @UseGuards(JwtGuard)
+  @ApiBearerAuth()
   create(@Body(new ValidationPipe()) createCustomDto: CreateCustomDto) {
     return this.customService.create(createCustomDto);
   }
