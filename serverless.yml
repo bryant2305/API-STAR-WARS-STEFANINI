@@ -29,6 +29,7 @@ provider:
     IS_OFFLINE: ${env:IS_OFFLINE}
     USERS_TABLE: users-${self:provider.stage}
     SWAPI_BASE_URL: ${env:SWAPI_BASE_URL}
+    WEATHER_API_URL: ${env:WEATHER_API_URL}
   httpApi:
     cors:
       allowedOrigins:

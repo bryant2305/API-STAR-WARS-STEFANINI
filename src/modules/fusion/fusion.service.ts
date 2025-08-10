@@ -9,6 +9,7 @@ import { SwapiService } from '../shared/swapi.service';
 import { v4 as uuidv4 } from 'uuid';
 import { planetCoordinates } from '../../enums/coordanates.enum';
 import { CacheService } from '../cache/cache.service'; // Importamos el nuevo servicio
+import { WeatherService } from '../shared/weather.service';
 
 @Injectable()
 export class FusionService {
@@ -19,6 +20,7 @@ export class FusionService {
     private readonly swapiService: SwapiService,
     private readonly dynamo: DynamoService,
     private readonly cacheService: CacheService,
+    private readonly weatherService: WeatherService,
   ) {}
 
   async getFusedData(characterId: number) {
@@ -42,7 +44,6 @@ export class FusionService {
       if (!planet) {
         throw new NotFoundException(`Planeta de ${person.name} no encontrado.`);
       }
-
       const coords = planetCoordinates[planet.name];
       if (!coords) {
         throw new NotFoundException(
@@ -50,8 +51,16 @@ export class FusionService {
         );
       }
 
-      const population =
-        planet.population === 'unknown' ? 0 : parseInt(planet.population, 10);
+      const weather = await this.weatherService.getWeather(
+        coords.lat,
+        coords.lon,
+      );
+
+      if (!coords) {
+        throw new NotFoundException(
+          `Coordenadas no disponibles para ${planet.name}.`,
+        );
+      }
 
       const fusion = {
         id: uuidv4(),
@@ -59,7 +68,8 @@ export class FusionService {
         nombre_personaje: person.name,
         planeta_origen: planet.name,
         clima_planeta: planet.climate,
-        poblacion_planeta: population,
+        poblacion_planeta: planet.population,
+        temperatura_planeta: weather.temperature,
       };
 
       // 3) Guardamos en el caché de DynamoDB con un TTL de 30 minutos
