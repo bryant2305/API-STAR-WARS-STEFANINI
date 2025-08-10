@@ -178,4 +178,3 @@ sls remove
 ## Licencia
 Este proyecto es solo para fines de evaluación técnica
 
-
