@@ -15,6 +15,7 @@ nestjs-api.zip
 .my-nest-app.zip
 .dynamodb
 dynamodb_local_latest.tar.gz
+.webpack/
 
 # Directorios de compilación
 dist/
