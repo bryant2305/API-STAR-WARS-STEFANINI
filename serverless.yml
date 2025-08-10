@@ -29,6 +29,21 @@ provider:
     IS_OFFLINE: ${env:IS_OFFLINE}
     USERS_TABLE: users-${self:provider.stage}
     SWAPI_BASE_URL: ${env:SWAPI_BASE_URL}
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowCredentials: false
+
 
   iam:
     role:
@@ -68,15 +83,6 @@ functions:
       - httpApi:
           path: /{proxy+}
           method: any
-          cors:
-            allowedOrigins:
-              - '*'
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - DELETE
-              - OPTIONS
 
 custom:
   defaultRegion: us-east-1
