@@ -28,9 +28,7 @@ async function seed() {
     name: 'Default Admin',
   });
 
-  console.log(
-    `✅ Usuario por defecto creado: ${defaultEmail} / ${defaultPassword}`,
-  );
+  console.log(`✅ Usuario por defecto creado: ${defaultEmail}`);
 }
 
 seed().catch((err) => {
