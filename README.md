@@ -1,99 +1,181 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API STAR WARS - STEFANINI
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este proyecto es una API RESTful serverless desarrollada con Node.js 20, TypeScript y Serverless Framework, como solución al Reto Técnico Backend de Stefanini. Integra datos de Star Wars y de un servicio meteorológico, fusionando y normalizando la información, y cumple con todos los requerimientos técnicos solicitados.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tabla de Contenidos
+- [Características](#características)
+- [Tecnologías](#tecnologías)
+- [Estructura del Proyecto](#estructura-del-proyecto)
+- [Instalación](#instalación)
+- [Variables de Entorno](#variables-de-entorno)
+- [Ejecución Local](#ejecución-local)
+- [Scripts Disponibles](#scripts-disponibles)
+- [Endpoints Principales](#endpoints-principales)
+- [Pruebas](#pruebas)
+- [Despliegue en AWS](#despliegue-en-aws)
+- [Licencia](#licencia)
 
-## Description
+## Características
+- Arquitectura serverless lista para AWS Lambda y API Gateway.
+- CRUD de entidades personalizadas y usuarios.
+- Integración y fusión de datos de la API de Star Wars (SWAPI) y una API meteorológica.
+- Normalización y procesamiento de datos (tipos, unidades, formatos).
+- Endpoints requeridos por el reto:
+  - `GET /fusionados`: Fusiona y almacena datos de ambas APIs externas.
+  - `POST /almacenar`: Almacena información personalizada en DynamoDB.
+  - `GET /historial`: Devuelve el historial de respuestas fusionadas, paginado y ordenado.
+- Sistema de caché (DynamoDB) para evitar llamadas repetidas a las APIs externas en un intervalo de 30 minutos.
+- Autenticación JWT para proteger endpoints sensibles.
+- Pruebas unitarias y de integración con Jest.
+- Optimización de costos en AWS Lambda (timeout, memoria).
+- Listo para despliegue en AWS con Serverless Framework.
+- Bonus: Logging avanzado, rate-limiting, y monitoreo (CloudWatch, X-Ray).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tecnologías
+- Node.js 20
+- NestJS
+- Serverless Framework
+- TypeScript
+- DynamoDB Local
+- Jest
+- Yarn
 
-## Project setup
-
-```bash
-$ yarn install
+## Estructura del Proyecto
+```
+api-serverless-data-fusion/
+├── src/
+│   ├── app.controller.ts
+│   ├── app.module.ts
+│   ├── app.service.ts
+│   ├── main.ts
+│   ├── lambda.ts
+│   ├── auth/
+│   ├── database/
+│   ├── enums/
+│   └── modules/
+│       ├── custom/
+│       ├── dynamo/
+│       ├── fusion/
+│       ├── shared/
+│       └── users/
+├── test/
+├── .env.example
+├── package.json
+├── serverless.yml
+├── tsconfig.json
+└── README.md
 ```
 
-## Compile and run the project
+## Instalación
+1. Clona el repositorio:
+   ```bash
+   git clone <REPO_URL>
+   cd api-serverless-data-fusion
+   ```
+2. Instala las dependencias:
+   ```bash
+   yarn install
+   ```
 
+## Variables de Entorno
+Copia el archivo `.env.example` a `.env` y completa los valores necesarios:
 ```bash
-# development
-$ yarn run start
+cp .env.example .env
+```
+Variables principales:
+- `JWT_SECRET_KEY`: Clave secreta para JWT
+- `AWS_REGION`: Región AWS
+- `IS_OFFLINE`: Ejecutar en modo local
+- `ADMIN_EMAIL` y `ADMIN_PASSWORD`: Credenciales admin
+- `USERS_TABLE`: Nombre de la tabla DynamoDB
+- `SWAPI_BASE_URL`: URL de la API de Star Wars
+- `WEATHER_API_URL`: URL del servicio de clima
+- `PORT`: Puerto local
 
-# watch mode
-$ yarn run start:dev
+## Ejecución Local
+ Ejecuta el proyecto en modo offline:
+   ```bash
+   yarn start:offline
+   ```
 
-# production mode
-$ yarn run start:prod
+## Scripts Disponibles
+- `start`: Inicia la API en modo desarrollo
+- `start:offline`: Inicia la API en modo serverless offline
+- `test`: Ejecuta pruebas
+- `lint`: Linting del código
+
+## Endpoints Principales
+
+### 1. Autenticación
+
+#### Login (obtener JWT)
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "admin123"}'
 ```
 
-## Run tests
+### 2. Fusionar datos de Star Wars y clima
 
+#### GET /fusionados
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+curl -X GET http://localhost:3000/api/fusion/fusionados/1 \
+  -H "Authorization: Bearer <TOKEN>"
 ```
 
-## Deployment
+### 3. Almacenar información personalizada
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
+#### POST /almacenar
 ```bash
-$ yarn install -g mau
-$ mau deploy
+curl -X POST http://localhost:3000/api/almacenar \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"tipo": "vehiculo", "datos": {"nombre": "X-Wing", "modelo": "T-65B"}}'
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. Consultar historial de respuestas fusionadas
 
-## Resources
+#### GET /historial
+```bash
+curl -X GET "http://localhost:3000/api/fusion/historial?&limit=10" \
+  -H "Authorization: Bearer <TOKEN>"
+```
 
-Check out a few resources that may come in handy when working with NestJS:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+> Reemplaza `<TOKEN>` por el JWT obtenido en el login.
 
-## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Pruebas
+Ejecuta las pruebas
+```bash
+yarn test
+```
 
-## Stay in touch
+## Despliegue en AWS
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Asegúrate de tener configuradas tus credenciales de AWS
+```bash
+aws configure
+```
 
-## License
+y el Serverless Framework instalado globalmente:
+```bash
+yarn global add serverless
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Despliega la API en AWS Lambda usando Serverless Framework:
+```bash
+yarn deploy
+```
+
+Esto empaquetará y subirá tu aplicación a AWS Lambda y creará los recursos necesarios (API Gateway, DynamoDB, etc.) según lo definido en `serverless.yml`.
+
+Para eliminar los recursos creados en AWS:
+```bash
+sls remove
+```
+
+## Licencia
+Este proyecto es solo para fines de evaluación técnica
+
+
