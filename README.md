@@ -13,7 +13,6 @@ Este proyecto es una API RESTful serverless desarrollada con Node.js 20, TypeScr
 - [Endpoints Principales](#endpoints-principales)
 - [Pruebas](#pruebas)
 - [Despliegue en AWS](#despliegue-en-aws)
-- [Licencia](#licencia)
 
 ## Características
 - Arquitectura serverless lista para AWS Lambda y API Gateway.
