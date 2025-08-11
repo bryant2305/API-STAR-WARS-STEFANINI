@@ -94,7 +94,7 @@ Variables principales:
 ## Ejecución Local
  Ejecuta el proyecto en modo offline:
    ```bash
-   yarn start:offline
+   yarn offline
    ```
 
 ## Scripts Disponibles
