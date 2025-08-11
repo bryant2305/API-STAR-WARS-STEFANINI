@@ -98,8 +98,8 @@ Variables principales:
    ```
 
 ## Scripts Disponibles
-- `start`: Inicia la API en modo desarrollo
-- `start:offline`: Inicia la API en modo serverless offline
+- `start:dev`: Inicia la API en modo desarrollo
+- `offline`: Inicia la API en modo serverless offline
 - `test`: Ejecuta pruebas
 - `lint`: Linting del código
 
