@@ -69,7 +69,7 @@ api-serverless-data-fusion/
 1. Clona el repositorio:
    ```bash
    git clone <REPO_URL>
-   cd api-serverless-data-fusion
+   cd API-STAR-WARS-STEFANINI
    ```
 2. Instala las dependencias:
    ```bash
